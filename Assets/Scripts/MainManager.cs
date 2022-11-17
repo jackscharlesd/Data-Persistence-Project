@@ -1,27 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    private int m_Points = 0;
     
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("in MainManager.start");
+
+        BestScoreText.text = "Best Score: Name:" + DataManager.Instance.GameData.PlayerName + " - " + DataManager.Instance.GameData.HighScore;
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +40,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        m_Points = DataManager.Instance.GameScore;
     }
 
     private void Update()
@@ -57,7 +63,7 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene("menu");
             }
         }
     }
@@ -66,11 +72,25 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        DataManager.Instance.GameScore = m_Points;
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (DataManager.Instance.GameScore > DataManager.Instance.GameData.HighScore)
+        {
+            DataManager.Instance.GameData.HighScore = DataManager.Instance.GameScore;
+            DataManager.Instance.GameData.PlayerName = DataManager.Instance.PlayerName;
+            DataManager.Instance.StoreGameData();
+        }
     }
+
+
+
+
+
+
 }
+
